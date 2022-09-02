@@ -1,72 +1,81 @@
-import { openLink, hotKeys, imageParser, toolbar, autoSymbal, onToolbarClick, createContextMenu } from "./util.js";
+/* eslint-disable no-undef */
+import {
+  autoSymbal,
+  createContextMenu,
+  hotKeys,
+  imageParser,
+  onToolbarClick,
+  openLink,
+  toolbar,
+} from './util.js';
 
-handler.on("open", (md) => {
+handler.on('open', (md) => {
   const config = md.config;
-  if (config.autoTheme) {
-    addAutoTheme()
-  }
+  if (config.autoTheme)
+    addAutoTheme();
+
   const editor = new Vditor('vditor', {
     value: md.content,
-    _lutePath: md.rootPath + '/lute.min.js',
+    _lutePath: `${md.rootPath}/lute.min.js`,
     height: document.documentElement.clientHeight,
     outline: {
       enable: config.openOutline,
       position: 'left',
     },
     mode: 'wysiwyg',
-    icon: "material",
+    icon: 'material',
     tab: '\t',
     preview: {
       theme: {
-        path: `${md.rootPath}/css/content-theme`
+        path: `${md.rootPath}/css/content-theme`,
       },
       markdown: {
-        toc: true
+        toc: true,
       },
       hljs: {
-        style: 'dracula'
+        style: 'dracula',
       },
       extPath: md.rootPath,
       math: {
         engine: 'KaTeX',
-        "inlineDigit": true
-      }
+        inlineDigit: true,
+      },
     },
     toolbar,
     extPath: md.rootPath,
     input(content) {
-      handler.emit("save", content)
+      handler.emit('save', content);
     },
     upload: {
       url: '/image',
       accept: 'image/*',
       handler(files) {
-        let reader = new FileReader();
+        const reader = new FileReader();
         reader.readAsBinaryString(files[0]);
         reader.onloadend = () => {
-          handler.emit("img", reader.result)
+          handler.emit('img', reader.result);
         };
-      }
+      },
     },
     hint: {
       emoji: {},
-      extend: hotKeys
-    }, after() {
-      handler.on("update", content => {
+      extend: hotKeys,
+    },
+    after() {
+      handler.on('update', (content) => {
         editor.setValue(content);
-      })
-      openLink()
-      onToolbarClick(editor)
-    }
-  })
+      });
+      openLink();
+      onToolbarClick(editor);
+    },
+  });
   autoSymbal(editor);
-  createContextMenu(editor)
-  imageParser(config.viewAbsoluteLocal)
-}).emit("init")
+  createContextMenu(editor);
+  imageParser(config.viewAbsoluteLocal);
+}).emit('init');
 
-
-function addAutoTheme(){
-  const css=`
+function addAutoTheme() {
+  const css = `
   * {
   border-color: var(--vscode-quickInputTitle-background) !important;
 }
@@ -100,8 +109,8 @@ function addAutoTheme(){
 .vditor-content .vditor-outline li > span >span:hover {
   color: var(--vscode-terminal-ansiBlue) !important;
 }
-`
+`;
   const style = document.createElement('style');
   style.innerText = css;
-  document.documentElement.appendChild(style)
+  document.documentElement.appendChild(style);
 }
