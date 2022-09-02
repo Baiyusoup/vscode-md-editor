@@ -1,4 +1,7 @@
-# Office Viewer
+# Vscode Markdown Editor
+这个东西和原仓库的区别：
+
+只保留了Markdown编辑功能
 
 ## 介绍
 

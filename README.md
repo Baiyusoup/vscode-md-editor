@@ -1,4 +1,8 @@
-# vscode-office
+# Vscode Markdown editor
+
+ Different with the [fork](https://github.com/cweijan/vscode-office):
+
+Only about markdown features
 
 [中文说明](README-CN.md)
 
