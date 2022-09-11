@@ -1,3 +1,0 @@
-{
-  "extends": ["@baiyusoup/eslint-config-vanilla/typescript"]
-}
