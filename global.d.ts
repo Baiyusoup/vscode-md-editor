@@ -1,12 +1,8 @@
 declare var acquireVsCodeApi: () => { postMessage: (payload: any) => void};
-
 declare interface Window {
-  vscodeEvent: {
-    on: (type: string, callback: Function) => void;
-    emit: (type: string, content?: any) => void;
-  },
-  eventBus: {
-    on: (type: string, callback: Function) => void;
-    emit: (type: string, content?: any) => void;
+  vscode: {
+    on: (type: string, callback: Function) => Window["vscode"];
+    trigger: (type: string, payload?: any) => void;
+    emit: (type: string, payload?: any) => void;
   }
 }

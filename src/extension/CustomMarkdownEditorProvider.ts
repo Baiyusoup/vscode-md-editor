@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { basename } from 'path';
 import * as vscode from 'vscode';
 import EventBus from '../eventEmitter/extension';
-import { buildPath, executeCommand, getFolders } from '../utils';
+import { buildPath, executeCommand } from '../utils';
 export default class CustomMarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	static readonly viewType = "vscode-md-editor.miniEditor";
   extensionPath: string;
@@ -24,7 +24,7 @@ export default class CustomMarkdownEditorProvider implements vscode.CustomTextEd
   resolveCustomTextEditor(
     document: vscode.TextDocument, 
     webviewPanel: vscode.WebviewPanel, 
-    token: vscode.CancellationToken
+    _token: vscode.CancellationToken
   ): void | Thenable<void> {
     const uri = document.uri;
     const webview = webviewPanel.webview;
@@ -32,7 +32,6 @@ export default class CustomMarkdownEditorProvider implements vscode.CustomTextEd
 
     webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file('/'), ...getFolders()]
     };
 
     const eventBus = EventBus.factory(webviewPanel, uri);
@@ -47,39 +46,32 @@ export default class CustomMarkdownEditorProvider implements vscode.CustomTextEd
     const uri = document.uri;
     const webview = eventBus.webviewPanel.webview;
 
-    let content = document.getText();
+    const initialContent = document.getText();
     const contextPath = `${this.extensionPath}/dist/editor`;
     const rootPath = webview.asWebviewUri(vscode.Uri.file(`${contextPath}`)).toString();
 
-    // const config = vscode.workspace.getConfiguration('vscode-office');
-    const config = {};
     eventBus
       .on('init', () => {
         eventBus.emit('open', {
           title: basename(uri.path),
-          content,
-          rootPath,
-          config
+          content: initialContent,
         });
+      })
+      .on('input', (changes) => {
+        this.updateTextDocument(document, changes);
       })
       .on('externalUpdate', (e) => {
         const updateText = e.document.getText()?.replace(/\r/g, '');
-        if (content === updateText) {
+        if (initialContent === updateText) {
           return;
         }
         eventBus.emit('update', updateText);
       })
-      .on('command', (command) => {
-        executeCommand(command);
-      })
       .on('editInVSCode', () => {
         executeCommand("vscode.openWith", uri, "default", vscode.ViewColumn.Beside);
       })
-      .on('save', (changes) => {
-        this.updateTextDocument(document, changes);
-      })
-      .on('doSave', () => {
-        executeCommand("workbench.action.files.save");
+      .on('command', (command) => {
+        executeCommand(command);
       });
     
     const html = readFileSync(`${this.extensionPath}/dist/editor/index.html`, 'utf8')
@@ -91,7 +83,13 @@ export default class CustomMarkdownEditorProvider implements vscode.CustomTextEd
 
   updateTextDocument(document: vscode.TextDocument, content: any) {
     const edit = new vscode.WorkspaceEdit();
-    edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), content);
+    // 更新整个文件
+    // TODO: 最少量更新
+    edit.replace(
+      document.uri,
+      new vscode.Range(0, 0, document.lineCount, 0),
+      content
+    );
     return vscode.workspace.applyEdit(edit);
   }
 }

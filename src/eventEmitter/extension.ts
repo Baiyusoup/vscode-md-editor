@@ -8,36 +8,44 @@ export default class EventBus {
   public static factory(webviewPanel: WebviewPanel, uri: Uri) {
     const eventEmitter = new EventEmitter();
 
-    const fileWatcher = vscode.workspace.createFileSystemWatcher(uri.fsPath);
-    fileWatcher.onDidChange((e) => {
-      eventEmitter.emit('fileChange', e);
-    });
-
+    // 当用户Enter或者保存时时，vscode会触发onDidChangeTextDocument
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
       if (e.document.uri.toString() === uri.toString() && e.contentChanges.length > 0) {
         eventEmitter.emit('externalUpdate', e);
       }
     });
 
+    // Make sure we get rid of the listener when our editor is closed.
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
-      eventEmitter.emit('dispose');
     });
 
-    // bind from webview
-    webviewPanel.webview.onDidReceiveMessage((message) => {
-      eventEmitter.emit(message.type, message.content);
+    // Recevie message from the webview
+    webviewPanel.webview.onDidReceiveMessage(({ type, payload }) => {
+      console.log(type, payload);
+      eventEmitter.emit(type, payload);
     });
 
     return new EventBus(webviewPanel, eventEmitter);
   }
 
-  on(event: string, callback: (content: any) => void) {
-    this.eventEmitter.on(event, callback);
+  /**
+   * 监听webview传递过来的message
+   * @param type 
+   * @param callback 
+   * @returns 
+   */
+  on(type: string, callback: (payload?: any) => void) {
+    this.eventEmitter.on(type, callback);
     return this;
   }
 
-  emit(event: string, content?: any) {
-    this.webviewPanel.webview.postMessage({ type: event, content });
+  /**
+   * 发送message给webview
+   * @param type 
+   * @param payload 
+   */
+  emit(type: string, payload?: any) {
+    this.webviewPanel.webview.postMessage({ type, payload });
   }
 }

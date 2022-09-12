@@ -14,7 +14,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onCustomEditor:vscode-md-editor.miniEditor"
   ],
   "main": "./dist/extension.js",
   "contributes": {
