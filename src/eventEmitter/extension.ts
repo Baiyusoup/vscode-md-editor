@@ -10,8 +10,8 @@ export default class EventBus {
 
     // 当用户Enter或者保存时时，vscode会触发onDidChangeTextDocument
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
-      if (e.document.uri.toString() === uri.toString() && e.contentChanges.length > 0) {
-        eventEmitter.emit('externalUpdate', e);
+      if (e.document.uri.toString() === uri.toString()) {
+        eventEmitter.emit('updateWebview', e.document.getText());
       }
     });
 
@@ -22,7 +22,6 @@ export default class EventBus {
 
     // Recevie message from the webview
     webviewPanel.webview.onDidReceiveMessage(({ type, payload }) => {
-      console.log(type, payload);
       eventEmitter.emit(type, payload);
     });
 

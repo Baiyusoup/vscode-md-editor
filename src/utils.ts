@@ -20,3 +20,15 @@ export function getFolders() {
 
   return folders;
 }
+
+export function updateTextDocument(document: vscode.TextDocument, content: any) {
+  const edit = new vscode.WorkspaceEdit();
+  // 更新整个文件
+  // TODO: 最少量更新
+  edit.replace(
+    document.uri,
+    new vscode.Range(0, 0, document.lineCount, 0),
+    content
+  );
+  return vscode.workspace.applyEdit(edit);
+}

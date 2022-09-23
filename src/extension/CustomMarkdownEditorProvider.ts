@@ -1,8 +1,7 @@
 import { readFileSync } from 'fs';
-import { basename } from 'path';
 import * as vscode from 'vscode';
 import EventBus from '../eventEmitter/extension';
-import { buildPath, executeCommand } from '../utils';
+import { buildPath, executeCommand, updateTextDocument } from '../utils';
 export default class CustomMarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	static readonly viewType = "vscode-md-editor.miniEditor";
   extensionPath: string;
@@ -46,23 +45,20 @@ export default class CustomMarkdownEditorProvider implements vscode.CustomTextEd
     const uri = document.uri;
     const webview = eventBus.webviewPanel.webview;
 
-    const initialContent = document.getText();
+    let documentContent = document.getText();
     const contextPath = `${this.extensionPath}/dist/editor`;
     const rootPath = webview.asWebviewUri(vscode.Uri.file(`${contextPath}`)).toString();
 
     eventBus
       .on('init', () => {
-        eventBus.emit('open', {
-          title: basename(uri.path),
-          content: initialContent,
-        });
+        eventBus.emit('open', { content: documentContent });
       })
       .on('input', (changes) => {
-        this.updateTextDocument(document, changes);
+        documentContent = changes;
+        updateTextDocument(document, changes);
       })
-      .on('externalUpdate', (e) => {
-        const updateText = e.document.getText()?.replace(/\r/g, '');
-        if (initialContent === updateText) {
+      .on('updateWebview', (updateText) => {
+        if (documentContent === updateText) {
           return;
         }
         eventBus.emit('update', updateText);
@@ -79,17 +75,5 @@ export default class CustomMarkdownEditorProvider implements vscode.CustomTextEd
       .replace('{{baseUrl}}', webview.asWebviewUri(folderPath).toString());
 
     webview.html = buildPath(html, webview, contextPath);
-  }
-
-  updateTextDocument(document: vscode.TextDocument, content: any) {
-    const edit = new vscode.WorkspaceEdit();
-    // 更新整个文件
-    // TODO: 最少量更新
-    edit.replace(
-      document.uri,
-      new vscode.Range(0, 0, document.lineCount, 0),
-      content
-    );
-    return vscode.workspace.applyEdit(edit);
   }
 }

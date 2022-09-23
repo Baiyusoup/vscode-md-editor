@@ -4,5 +4,6 @@ declare interface Window {
     on: (type: string, callback: Function) => Window["vscode"];
     trigger: (type: string, payload?: any) => void;
     emit: (type: string, payload?: any) => void;
-  }
+  },
+  vditor: any;
 }
