@@ -48,7 +48,7 @@ const extensionConfig = {
 /** @type WebpackConfig */
 const editorConfig = {
   // target: "",
-  mode: "development",
+  mode: "production",
   entry: "./src/editor/index.ts",
   output: {
     path: path.resolve(__dirname, 'dist/editor'),
