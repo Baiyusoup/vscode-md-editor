@@ -2,14 +2,16 @@ import "../eventEmitter/webview";
 import "./style.css";
 import Vditor from "vditor";
 import "vditor/dist/index.css";
+import { autoResize, autoThme } from "./utils";
 
 window.vscode
   .on('open', (payload: any) => {
+    const editorName = "editor";
     if (window.vditor) {
       window.vditor.destroy();
       window.vditor = null;
     }
-    const instance = new Vditor("editor", {
+    const instance = new Vditor(editorName, {
       mode: "wysiwyg",
       value: payload.content,
       height: document.documentElement.clientHeight,
@@ -49,5 +51,7 @@ window.vscode
     });
     window.vditor = instance;
 
+    autoThme();
+    autoResize(editorName);
   })
 .emit("init");

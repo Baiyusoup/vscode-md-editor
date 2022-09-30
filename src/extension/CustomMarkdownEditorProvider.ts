@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as vscode from 'vscode';
 import EventBus from '../eventEmitter/extension';
-import { buildPath, executeCommand, updateTextDocument } from '../utils';
+import { buildPath, executeCommand, updateTextDocument } from './utils';
 export default class CustomMarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 	static readonly viewType = "vscode-md-editor.miniEditor";
   extensionPath: string;
